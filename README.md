@@ -5,3 +5,5 @@ This prototype is an interactive HTML form that demonstrates how normalized camp
 ## Usage
 
 Download `dsp_activation_mcp.html`, open it in any modern browser, and fill out the form. Use the output tabs to copy your normalized JSON, DV360 API payload, CM360 linking configuration, or full workflow sequence. Payloads are ready to paste directly into Postman or wire into a backend MCP server. Mock data is included for advertisers, placements, and audiences — replace with real account values when connecting to live APIs.
+
+## Live Prototype | [Launch `dsp_activation_mcp.html` →]([https://mfrancisgioia.github.io/influence-finder/prototype/influence_finder.html](https://github.com/mfrancisgioia/dsp_activation_mcp/blob/main/prototype/dsp_activation_mcp.html))
