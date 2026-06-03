@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DV360 MCP Integration - CM360 Linking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-content {
+            padding: 30px;
+            max-height: 1200px;
+            overflow-y: auto;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .required-indicator {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-group input:read-only {
+            background: #f5f5f5;
+            color: #999;
+            cursor: not-allowed;
+        }
+        
+        .form-group .helper-text {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .cm360-nested-group {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #ff6b6b;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .cm360-nested-group.active {
+            display: block;
+        }
+        
+        .cm360-nested-group .form-group {
+            margin-bottom: 12px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 15px 0;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            flex: 1;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            flex: 1;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e0e0e0;
+            background: #f8f8f8;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: #f8f8f8;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+            max-height: 1200px;
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #e0e0e0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 11px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            position: relative;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .code-block .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: capitalize;
+        }
+        
+        .code-block .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .code-block .copy-btn.copied {
+            background: #4caf50;
+            border-color: #4caf50;
+        }
+        
+        .key {
+            color: #9cdcfe;
+        }
+        
+        .string {
+            color: #ce9178;
+        }
+        
+        .number {
+            color: #b5cea8;
+        }
+        
+        .boolean {
+            color: #569cd6;
+        }
+        
+        .null {
+            color: #569cd6;
+        }
+        
+        .api-call-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .api-call-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .api-endpoint {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: white;
+            min-width: 50px;
+            text-align: center;
+        }
+        
+        .method.post {
+            background: #4caf50;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        
+        .alert-info {
+            background: #e3f2fd;
+            color: #01579b;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .alert-success {
+            background: #e8f5e9;
+            color: #1b5e20;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .summary-item-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .summary-item-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 DV360 + CM360 Activation Link <span class="badge">MCP</span></h1>
+            <p>DV360 Media Buying + CM360 Ad Server Linking</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- LEFT PANEL: Configuration -->
+            <div class="panel">
+                <div class="panel-header">
+                    📝 DV360 Configuration
+                    <span style="font-size: 12px; font-weight: 400;">Media Buying Setup</span>
+                </div>
+                <div class="panel-content">
+                    <form id="configForm">
+                        <!-- PLATFORM INTEGRATION RECORD SECTION -->
+                        <div class="section">
+                            <div class="section-title">
+                                🔗 Platform Integration Record
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Platform <span class="required-indicator">*</span></label>
+                                <select id="platform" required>
+                                    <option value="">-- Select Platform --</option>
+                                    <option value="GOOGLE_DV360" selected>Google DV360</option>
+                                    <option value="GOOGLE_ADS">Google Ads</option>
+                                    <option value="META">Meta</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Advertiser Account <span class="required-indicator">*</span></label>
+                                <select id="advertiserAccount" onchange="updatePartnerIdFromAdvertiser()" required>
+                                    <option value="">-- Select Advertiser --</option>
+                                    <option value="67890_LUXE_AUTO">Luxury Automotive Inc. (67890)</option>
+                                    <option value="71234_TECH_CORP">Tech Corporation (71234)</option>
+                                    <option value="75678_RETAIL_CO">Retail Co. (75678)</option>
+                                    <option value="79012_FINANCE">Finance Services Ltd. (79012)</option>
+                                </select>
+                                <div class="helper-text">Select your advertiser account</div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Partner ID <span class="required-indicator">*</span></label>
+                                <input type="text" id="partnerId" placeholder="Auto-populated" required readonly>
+                                <div class="helper-text">Auto-populated based on advertiser selection</div>
+                            </div>
+                        </div>
+                        
+                        <!-- CAMPAIGN SECTION -->
+                        <div class="section">
+                            <div class="section-title">
+                                🎯 Campaign <span class="required-indicator">*</span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Display Name <span class="required-indicator">*</span></label>
+                                <input type="text" id="campaignDisplayName" value="Q3 2024 Automotive Campaign" placeholder="Campaign name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Campaign Goal Type <span class="required-indicator">*</span></label>
+                                <select id="campaignGoalType" required>
+                                    <option value="">-- Select Goal Type --</option>
+                                    <option value="CAMPAIGN_GOAL_TYPE_BRAND_AWARENESS">Brand Awareness</option>
+                                    <option value="CAMPAIGN_GOAL_TYPE_PERFORMANCE" selected>Performance</option>
+                                    <option value="CAMPAIGN_GOAL_TYPE_REACH">Reach</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Advertiser ID</label>
+                                <input type="text" id="advertiserId" placeholder="Auto-populated" readonly>
+                            </div>
+                        </div>
+                        
+                        <!-- INSERTION ORDER SECTION -->
+                        <div class="section">
+                            <div class="section-title">
+                                📋 Insertion Order <span class="required-indicator">*</span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Display Name <span class="required-indicator">*</span></label>
+                                <input type="text" id="ioDisplayName" value="Automotive - United States" placeholder="IO name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Budget Amount (USD) <span class="required-indicator">*</span></label>
+                                <input type="number" id="ioBudgetAmount" value="100000" placeholder="100000" step="1" required>
+                            </div>
+                            
+                            <div class="two-col">
+                                <div class="form-group">
+                                    <label>Start Date <span class="required-indicator">*</span></label>
+                                    <input type="date" id="ioStartDate" value="2024-09-01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>End Date <span class="required-indicator">*</span></label>
+                                    <input type="date" id="ioEndDate" value="2024-09-30" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- LINE ITEM SECTION -->
+                        <div class="section">
+                            <div class="section-title">
+                                🎬 Line Item <span class="required-indicator">*</span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Display Name <span class="required-indicator">*</span></label>
+                                <input type="text" id="liDisplayName" value="Premium Inventory - Luxury Vehicles" placeholder="Line item name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Line Item Type <span class="required-indicator">*</span></label>
+                                <select id="liType" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="LINE_ITEM_TYPE_DISPLAY" selected>Display</option>
+                                    <option value="LINE_ITEM_TYPE_VIDEO">Video</option>
+                                    <option value="LINE_ITEM_TYPE_AUDIO">Audio</option>
+                                    <option value="LINE_ITEM_TYPE_NATIVE">Native</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>CPM Bid (USD) <span class="required-indicator">*</span></label>
+                                <input type="number" id="liFixedBidAmount" value="2.50" placeholder="2.50" step="0.01" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Budget Amount (USD)</label>
+                                <input type="number" id="liBudgetAmount" value="50000" placeholder="50000" step="1">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Link to CM360 Ad Server</label>
+                                <select id="enableCM360Linking" onchange="toggleCM360Linking()">
+                                    <option value="false">No - DV360 Only</option>
+                                    <option value="true" selected>Yes - Link to CM360</option>
+                                </select>
+                                <div class="helper-text">Link this line item to CM360 placement for unified tracking</div>
+                            </div>
+                            
+                            <!-- CM360 NESTED SECTION -->
+                            <div id="cm360LinkedGroup" class="cm360-nested-group active">
+                                <div class="form-group">
+                                    <label>CM360 Advertiser Account</label>
+                                    <select id="cm360Advertiser" onchange="updateCM360Campaigns()">
+                                        <option value="">-- Select Advertiser --</option>
+                                        <option value="CM360_ADV_001">Luxury Automotive Inc. (CM360_ADV_001)</option>
+                                        <option value="CM360_ADV_002" selected>Tech Corporation (CM360_ADV_002)</option>
+                                        <option value="CM360_ADV_003">Retail Co. (CM360_ADV_003)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>CM360 Campaign</label>
+                                    <select id="cm360Campaign" onchange="updateCM360Placements()">
+                                        <option value="">-- Select Campaign --</option>
+                                        <option value="CM360_CAMP_001">Brand Campaign Q3 2024 (CM360_CAMP_001)</option>
+                                        <option value="CM360_CAMP_002" selected>Performance Campaign (CM360_CAMP_002)</option>
+                                        <option value="CM360_CAMP_003">Remarketing Campaign (CM360_CAMP_003)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>CM360 Placement</label>
+                                    <select id="cm360Placement">
+                                        <option value="">-- Select Placement --</option>
+                                        <option value="CM360_PLACE_001">Homepage Leaderboard (CM360_PLACE_001)</option>
+                                        <option value="CM360_PLACE_002" selected>Premium Right Rail (CM360_PLACE_002)</option>
+                                        <option value="CM360_PLACE_003">Video Pre-roll (CM360_PLACE_003)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- CREATIVE SECTION -->
+                        <div class="section">
+                            <div class="section-title">
+                                🖼️ Creative <span class="required-indicator">*</span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Display Name <span class="required-indicator">*</span></label>
+                                <input type="text" id="creativeDisplayName" value="Hero Banner - Auto Luxury" placeholder="Creative name" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Creative Type <span class="required-indicator">*</span></label>
+                                <select id="creativeType" required>
+                                    <option value="">-- Select Type --</option>
+                                    <option value="CREATIVE_TYPE_DISPLAY" selected>Display</option>
+                                    <option value="CREATIVE_TYPE_VIDEO">Video</option>
+                                    <option value="CREATIVE_TYPE_NATIVE">Native</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Landing URL <span class="required-indicator">*</span></label>
+                                <input type="url" id="landingUrl" value="https://www.example.com/luxury-vehicles" placeholder="https://example.com" required>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button type="button" class="btn-primary" onclick="generatePayloads()">🚀 Generate & Link</button>
+                            <button type="reset" class="btn-secondary">↻ Reset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- RIGHT PANEL: Output -->
+            <div class="panel">
+                <div class="panel-header">
+                    🔄 MCP Translation & Linking Output
+                </div>
+                
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab(event, 'normalized')">📊 Normalized</button>
+                    <button class="tab" onclick="switchTab(event, 'dv360')">🎯 DV360 API</button>
+                    <button class="tab" onclick="switchTab(event, 'linking')">🔗 CM360 Link</button>
+                    <button class="tab" onclick="switchTab(event, 'workflow')">⚡ Workflow</button>
+                </div>
+                
+                <!-- Normalized Tab -->
+                <div id="normalized" class="tab-content active">
+                    <div class="alert alert-info">
+                        ℹ️ <strong>Normalized Payload:</strong> Platform-agnostic format with CM360 linking metadata
+                    </div>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this, 'normalized-code')">Copy</button>
+                        <pre id="normalized-code">{}</pre>
+                    </div>
+                </div>
+                
+                <!-- DV360 API Tab -->
+                <div id="dv360" class="tab-content">
+                    <div class="alert alert-success">
+                        ✓ <strong>DV360 API Calls:</strong> Campaign, IO, Line Item, Creative
+                    </div>
+                    <div id="dv360-calls"></div>
+                </div>
+                
+                <!-- CM360 Linking Tab -->
+                <div id="linking" class="tab-content">
+                    <div class="alert alert-warning">
+                        🔗 <strong>CM360 Placement Linking:</strong> Link DV360 line item to CM360 placement
+                    </div>
+                    <div id="cm360-linking-content"></div>
+                </div>
+                
+                <!-- Workflow Tab -->
+                <div id="workflow" class="tab-content">
+                    <div class="alert alert-info">
+                        ℹ️ <strong>Activation Workflow:</strong> Sequential steps for DV360 + CM360 linking
+                    </div>
+                    <div id="workflow-steps"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Summary Box -->
+        <div class="summary-box">
+            <h3 style="margin-bottom: 20px; font-size: 16px;">📊 Execution Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-item-value" id="apiCallCount">0</div>
+                    <div class="summary-item-label">DV360 API Calls</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-value" id="objectCount">0</div>
+                    <div class="summary-item-label">Objects</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-value" id="requiredFields">0</div>
+                    <div class="summary-item-label">Required Fields</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-value" id="mcpStatus">Ready</div>
+                    <div class="summary-item-label">MCP Status</div>
+                </div>
+            </div>
+            <div id="summary-text" style="font-size: 13px; line-height: 1.8; opacity: 0.95;"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Mock data for CM360 campaigns by advertiser
+        const cm360CampaignData = {
+            'CM360_ADV_001': [
+                { id: 'CM360_CAMP_001', name: 'Brand Campaign Q3 2024' },
+                { id: 'CM360_CAMP_004', name: 'Luxury Automotive Brand' },
+            ],
+            'CM360_ADV_002': [
+                { id: 'CM360_CAMP_002', name: 'Performance Campaign' },
+                { id: 'CM360_CAMP_005', name: 'Tech Product Launch' },
+            ],
+            'CM360_ADV_003': [
+                { id: 'CM360_CAMP_003', name: 'Remarketing Campaign' },
+                { id: 'CM360_CAMP_006', name: 'Retail Promotions' },
+            ]
+        };
+        
+        // Mock data for CM360 placements by campaign
+        const cm360PlacementData = {
+            'CM360_CAMP_001': [
+                { id: 'CM360_PLACE_001', name: 'Homepage Leaderboard' },
+                { id: 'CM360_PLACE_004', name: 'Brand Homepage' }
+            ],
+            'CM360_CAMP_002': [
+                { id: 'CM360_PLACE_002', name: 'Premium Right Rail' },
+                { id: 'CM360_PLACE_005', name: 'Performance Feed' }
+            ],
+            'CM360_CAMP_003': [
+                { id: 'CM360_PLACE_003', name: 'Video Pre-roll' },
+                { id: 'CM360_PLACE_006', name: 'Retargeting Banner' }
+            ],
+            'CM360_CAMP_004': [
+                { id: 'CM360_PLACE_007', name: 'Luxury Luxury Site' },
+                { id: 'CM360_PLACE_008', name: 'Auto Publication' }
+            ],
+            'CM360_CAMP_005': [
+                { id: 'CM360_PLACE_009', name: 'Tech Blog Sidebar' },
+                { id: 'CM360_PLACE_010', name: 'Tech Publication' }
+            ],
+            'CM360_CAMP_006': [
+                { id: 'CM360_PLACE_011', name: 'Retail Homepage' },
+                { id: 'CM360_PLACE_012', name: 'Category Pages' }
+            ]
+        };
+        
+        function updatePartnerIdFromAdvertiser() {
+            const advertiserAccount = document.getElementById('advertiserAccount').value;
+            let partnerId = '';
+            let advertiserId = '';
+            
+            const accountMap = {
+                '67890_LUXE_AUTO': { partnerId: '12345', advertiserId: '67890' },
+                '71234_TECH_CORP': { partnerId: '12346', advertiserId: '71234' },
+                '75678_RETAIL_CO': { partnerId: '12347', advertiserId: '75678' },
+                '79012_FINANCE': { partnerId: '12348', advertiserId: '79012' }
+            };
+            
+            if (accountMap[advertiserAccount]) {
+                partnerId = accountMap[advertiserAccount].partnerId;
+                advertiserId = accountMap[advertiserAccount].advertiserId;
+            }
+            
+            document.getElementById('partnerId').value = partnerId;
+            document.getElementById('advertiserId').value = advertiserId;
+        }
+        
+        function toggleCM360Linking() {
+            const enableCM360 = document.getElementById('enableCM360Linking').value === 'true';
+            const cm360Group = document.getElementById('cm360LinkedGroup');
+            
+            if (enableCM360) {
+                cm360Group.classList.add('active');
+            } else {
+                cm360Group.classList.remove('active');
+            }
+        }
+        
+        function updateCM360Campaigns() {
+            const advertiser = document.getElementById('cm360Advertiser').value;
+            const campaignSelect = document.getElementById('cm360Campaign');
+            
+            campaignSelect.innerHTML = '<option value="">-- Select Campaign --</option>';
+            
+            if (advertiser && cm360CampaignData[advertiser]) {
+                cm360CampaignData[advertiser].forEach(campaign => {
+                    const option = document.createElement('option');
+                    option.value = campaign.id;
+                    option.textContent = `${campaign.name} (${campaign.id})`;
+                    campaignSelect.appendChild(option);
+                });
+            }
+            
+            updateCM360Placements();
+        }
+        
+        function updateCM360Placements() {
+            const campaign = document.getElementById('cm360Campaign').value;
+            const placementSelect = document.getElementById('cm360Placement');
+            
+            placementSelect.innerHTML = '<option value="">-- Select Placement --</option>';
+            
+            if (campaign && cm360PlacementData[campaign]) {
+                cm360PlacementData[campaign].forEach(placement => {
+                    const option = document.createElement('option');
+                    option.value = placement.id;
+                    option.textContent = `${placement.name} (${placement.id})`;
+                    placementSelect.appendChild(option);
+                });
+            }
+        }
+        
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function formatJSON(obj) {
+            let json = JSON.stringify(obj, null, 2);
+            json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            json = json.replace(/"([^"]+)":/g, '<span class="key">"$1":</span>');
+            json = json.replace(/: "([^"]*)"/g, ': <span class="string">"$1"</span>');
+            json = json.replace(/: (\d+(?:\.\d+)?)/g, ': <span class="number">$1</span>');
+            json = json.replace(/: (true|false)/g, ': <span class="boolean">$1</span>');
+            json = json.replace(/: null/g, ': <span class="null">null</span>');
+            return json;
+        }
+        
+        function copyCode(button, elementId) {
+            const codeElement = document.getElementById(elementId);
+            const text = codeElement.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = '✓ Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+        
+        function generatePayloads() {
+            const platform = document.getElementById('platform').value;
+            const campaignDisplayName = document.getElementById('campaignDisplayName').value;
+            const campaignGoalType = document.getElementById('campaignGoalType').value;
+            const partnerId = document.getElementById('partnerId').value;
+            const advertiserId = document.getElementById('advertiserId').value;
+            
+            const ioDisplayName = document.getElementById('ioDisplayName').value;
+            const ioBudgetAmount = parseFloat(document.getElementById('ioBudgetAmount').value);
+            const ioStartDate = document.getElementById('ioStartDate').value;
+            const ioEndDate = document.getElementById('ioEndDate').value;
+            
+            const liDisplayName = document.getElementById('liDisplayName').value;
+            const liType = document.getElementById('liType').value;
+            const liFixedBidAmount = parseFloat(document.getElementById('liFixedBidAmount').value);
+            const liBudgetAmount = parseFloat(document.getElementById('liBudgetAmount').value);
+            
+            const creativeDisplayName = document.getElementById('creativeDisplayName').value;
+            const creativeType = document.getElementById('creativeType').value;
+            const landingUrl = document.getElementById('landingUrl').value;
+            
+            const enableCM360Linking = document.getElementById('enableCM360Linking').value === 'true';
+            const cm360Advertiser = document.getElementById('cm360Advertiser').value;
+            const cm360Campaign = document.getElementById('cm360Campaign').value;
+            const cm360Placement = document.getElementById('cm360Placement').value;
+            
+            const [ioStartYear, ioStartMonth, ioStartDay] = ioStartDate.split('-');
+            const [ioEndYear, ioEndMonth, ioEndDay] = ioEndDate.split('-');
+            
+            const normalizedPayload = {
+                metadata: {
+                    platform: platform,
+                    mcp_version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    action: "publish_and_link_to_cm360"
+                },
+                campaign: {
+                    displayName: campaignDisplayName,
+                    campaignGoalType: campaignGoalType,
+                    partnerId: partnerId,
+                    advertiserId: advertiserId
+                },
+                insertionOrder: {
+                    displayName: ioDisplayName,
+                    budgetAmountMicros: Math.round(ioBudgetAmount * 1000000),
+                    startDate: ioStartDate,
+                    endDate: ioEndDate
+                },
+                lineItem: {
+                    displayName: liDisplayName,
+                    lineItemType: liType,
+                    fixedBidAmountMicros: Math.round(liFixedBidAmount * 1000000),
+                    budgetAmountMicros: Math.round(liBudgetAmount * 1000000)
+                },
+                creative: {
+                    displayName: creativeDisplayName,
+                    creativeType: creativeType,
+                    landingUrl: landingUrl
+                },
+                cm360Linking: enableCM360Linking ? {
+                    enabled: true,
+                    advertiser: cm360Advertiser,
+                    campaign: cm360Campaign,
+                    placement: cm360Placement
+                } : {
+                    enabled: false
+                }
+            };
+            
+            document.getElementById('normalized-code').innerHTML = formatJSON(normalizedPayload);
+            generateDV360API(normalizedPayload);
+            generateCM360Linking(normalizedPayload);
+            generateWorkflow(normalizedPayload);
+            updateSummary(normalizedPayload);
+        }
+        
+        function generateDV360API(payload) {
+            const calls = [
+                {
+                    title: "1. Create Campaign",
+                    endpoint: "POST /v1/partners/{partnerId}/campaigns",
+                    payload: {
+                        displayName: payload.campaign.displayName,
+                        campaignGoal: {
+                            campaignGoalType: payload.campaign.campaignGoalType
+                        }
+                    }
+                },
+                {
+                    title: "2. Create Insertion Order",
+                    endpoint: "POST /v1/partners/{partnerId}/insertionOrders",
+                    payload: {
+                        displayName: payload.insertionOrder.displayName,
+                        campaignId: "campaign_id_from_step_1",
+                        insertionOrderType: "INSERTION_ORDER_TYPE_STANDARD",
+                        budget: {
+                            currencyCode: "USD",
+                            budgetAmountMicros: payload.insertionOrder.budgetAmountMicros
+                        },
+                        dateRange: {
+                            startDate: {
+                                year: parseInt(payload.insertionOrder.startDate.split('-')[0]),
+                                month: parseInt(payload.insertionOrder.startDate.split('-')[1]),
+                                day: parseInt(payload.insertionOrder.startDate.split('-')[2])
+                            },
+                            endDate: {
+                                year: parseInt(payload.insertionOrder.endDate.split('-')[0]),
+                                month: parseInt(payload.insertionOrder.endDate.split('-')[1]),
+                                day: parseInt(payload.insertionOrder.endDate.split('-')[2])
+                            }
+                        }
+                    }
+                },
+                {
+                    title: "3. Create Line Item",
+                    endpoint: "POST /v1/partners/{partnerId}/lineItems",
+                    payload: {
+                        displayName: payload.lineItem.displayName,
+                        insertionOrderId: "io_id_from_step_2",
+                        lineItemType: payload.lineItem.lineItemType,
+                        bidStrategy: {
+                            fixedBid: {
+                                bidAmountMicros: payload.lineItem.fixedBidAmountMicros
+                            }
+                        },
+                        budget: {
+                            budgetAmountMicros: payload.lineItem.budgetAmountMicros,
+                            budgetUnit: "BUDGET_UNIT_CURRENCY"
+                        }
+                    }
+                },
+                {
+                    title: "4. Create Creative",
+                    endpoint: "POST /v1/partners/{partnerId}/creatives",
+                    payload: {
+                        displayName: payload.creative.displayName,
+                        creativeType: payload.creative.creativeType,
+                        advertiserId: payload.campaign.advertiserId,
+                        hostingSource: "HOSTING_SOURCE_DV360",
+                        exitEvents: [{
+                            type: "EXIT_EVENT_TYPE_DEFAULT",
+                            url: payload.creative.landingUrl
+                        }]
+                    }
+                }
+            ];
+            
+            let html = '';
+            calls.forEach(call => {
+                html += `
+                    <div class="api-call-section">
+                        <h3>${call.title}</h3>
+                        <div class="api-endpoint">
+                            <span class="method post">POST</span>
+                            <span>${call.endpoint}</span>
+                        </div>
+                        <div class="code-block">
+                            <button class="copy-btn" onclick="copyCode(this, 'dv360-${call.title.split('.')[0]}')">Copy</button>
+                            <pre id="dv360-${call.title.split('.')[0]}">${formatJSON(call.payload)}</pre>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('dv360-calls').innerHTML = html;
+        }
+        
+        function generateCM360Linking(payload) {
+            if (!payload.cm360Linking.enabled) {
+                document.getElementById('cm360-linking-content').innerHTML = `
+                    <div class="alert alert-info">
+                        ℹ️ CM360 linking is disabled. This campaign will operate in DV360 only.
+                    </div>
+                `;
+                return;
+            }
+            
+            const linkingConfig = {
+                dv360Metadata: {
+                    lineItemName: payload.lineItem.displayName,
+                    campaignName: payload.campaign.displayName,
+                    budgetUSD: payload.lineItem.budgetAmountMicros / 1000000,
+                    cpuUSD: payload.lineItem.fixedBidAmountMicros / 1000000
+                },
+                cm360Reference: {
+                    advertiser: payload.cm360Linking.advertiser,
+                    campaign: payload.cm360Linking.campaign,
+                    placement: payload.cm360Linking.placement
+                },
+                linkedMapping: {
+                    dv360LineItemId: "li_dv360_001",
+                    cm360PlacementId: payload.cm360Linking.placement,
+                    linkedAt: new Date().toISOString(),
+                    status: "ACTIVE"
+                }
+            };
+            
+            let html = `
+                <div class="api-call-section">
+                    <h3>Link DV360 Line Item to CM360 Placement</h3>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                        Store bidirectional reference for unified reporting
+                    </p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this, 'linking-config')">Copy</button>
+                        <pre id="linking-config">${formatJSON(linkingConfig)}</pre>
+                    </div>
+                </div>
+                
+                <div class="api-call-section">
+                    <h3>Real-time Metrics Sync Configuration</h3>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                        Enable metric syncing between DV360 and CM360 for unified dashboards
+                    </p>
+                    <div class="code-block">
+                        <button class="copy-btn" onclick="copyCode(this, 'metrics-sync')">Copy</button>
+                        <pre id="metrics-sync">${formatJSON({
+                            metricsSync: {
+                                enabled: true,
+                                frequency: "REAL_TIME",
+                                linkedObjects: {
+                                    dv360LineItemId: "li_dv360_001",
+                                    cm360PlacementId: payload.cm360Linking.placement
+                                },
+                                metrics: [
+                                    "IMPRESSIONS",
+                                    "CLICKS",
+                                    "CONVERSIONS",
+                                    "CPM",
+                                    "CPC",
+                                    "CTR"
+                                ]
+                            }
+                        })}</pre>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('cm360-linking-content').innerHTML = html;
+        }
+        
+        function generateWorkflow(payload) {
+            const workflow = [
+                {
+                    number: 1,
+                    title: "Select Integration Record",
+                    description: `Platform: ${payload.metadata.platform} | Advertiser: ${payload.campaign.advertiserId}`
+                },
+                {
+                    number: 2,
+                    title: "Create DV360 Campaign",
+                    description: `Campaign: "${payload.campaign.displayName}"`
+                },
+                {
+                    number: 3,
+                    title: "Create Insertion Order",
+                    description: `Budget: $${(payload.insertionOrder.budgetAmountMicros / 1000000).toFixed(0)} | Period: ${payload.insertionOrder.startDate} to ${payload.insertionOrder.endDate}`
+                },
+                {
+                    number: 4,
+                    title: "Create Line Item",
+                    description: `"${payload.lineItem.displayName}" | CPM: $${(payload.lineItem.fixedBidAmountMicros / 1000000).toFixed(2)}`
+                },
+                {
+                    number: 5,
+                    title: "Create Creative",
+                    description: `"${payload.creative.displayName}" | Redirect to ${payload.creative.landingUrl}`
+                }
+            ];
+            
+            if (payload.cm360Linking.enabled) {
+                workflow.push({
+                    number: 6,
+                    title: "Link to CM360 Placement",
+                    description: `Placement: ${payload.cm360Linking.placement} | Enable metrics sync`
+                });
+            }
+            
+            let html = '';
+            workflow.forEach(step => {
+                html += `
+                    <div style="margin-bottom: 20px; padding: 15px; background: #f8f8f8; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: #667eea; color: white; border-radius: 50%; font-weight: 700; flex-shrink: 0;">
+                                ${step.number}
+                            </div>
+                            <div style="flex: 1;">
+                                <h3 style="color: #333; font-size: 14px; margin-bottom: 4px;">${step.title}</h3>
+                                <p style="font-size: 12px; color: #666; margin: 0;">${step.description}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById('workflow-steps').innerHTML = html;
+        }
+        
+        function updateSummary(payload) {
+            const apiCallCount = payload.cm360Linking.enabled ? 5 : 4;
+            
+            document.getElementById('apiCallCount').textContent = '4';
+            document.getElementById('objectCount').textContent = '4';
+            document.getElementById('requiredFields').textContent = '12';
+            document.getElementById('mcpStatus').textContent = payload.cm360Linking.enabled ? '✓ Linked' : '✓ Ready';
+            
+            const summaryText = `
+                <strong>DV360 Campaign Ready:</strong><br/>
+                • Platform: ${payload.metadata.platform}<br/>
+                • Campaign: "${payload.campaign.displayName}"<br/>
+                • IO: "${payload.insertionOrder.displayName}" ($${(payload.insertionOrder.budgetAmountMicros / 1000000).toFixed(0)})<br/>
+                • Line Item: "${payload.lineItem.displayName}" ($${(payload.lineItem.fixedBidAmountMicros / 1000000).toFixed(2)} CPM)<br/>
+                • Creative: "${payload.creative.displayName}"<br/>
+                ${payload.cm360Linking.enabled ? `<br/>
+                <strong>CM360 Linked:</strong><br/>
+                • Placement: ${payload.cm360Linking.placement}<br/>
+                • Metrics Sync: Enabled (Real-time)` : ''}
+            `;
+            
+            document.getElementById('summary-text').innerHTML = summaryText;
+        }
+        
+        window.addEventListener('load', () => {
+            updatePartnerIdFromAdvertiser();
+            updateCM360Campaigns();
+            generatePayloads();
+        });
+    </script>
+</body>
+</html>
